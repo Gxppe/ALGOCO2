@@ -3,22 +3,25 @@ using namespace std;
 
 // Función para calcular el costo de sustituir el carácter 'a' por 'b'
 int costo_sub(char a, char b) {
-    return (a != b) ? 2 : 0; // Ejemplo: costo de sustitución es 2 si son diferentes
+
+    return (a != b) ? 2 : 0; // Costo de sustitución es 2 si son diferentes
 }
 
 // Función para calcular el costo de insertar el carácter 'b'
 int costo_ins(char b) {
-    return 1; // Ejemplo: costo de inserción es 1
+
+    return 1; // Costo de inserción es 1
 }
 
 // Función para calcular el costo de eliminar el carácter 'a'
 int costo_del(char a) {
-    return 1; // Ejemplo: costo de eliminación es 1
+
+    return 1; // Costo de eliminación es 1
 }
 
 // Función para calcular el costo de transponer los caracteres 'a' y 'b'
 int costo_trans(char a, char b) {
-    return 1; // Ejemplo: costo de transposición es 1
+    return (a != b) ? 1 : 0;  // Retorna 1 si 'a' y 'b' son diferentes, 0 si son iguales
 }
 
 // Función de distancia de edición con costos específicos y optimización de espacio
@@ -41,7 +44,11 @@ int editDist(string& s1, string& s2) {
         for (int j = 1; j <= n; j++) {
             if (s1[i - 1] == s2[j - 1]) {
                 curr[j] = prev[j - 1]; // Sin costo si los caracteres coinciden
-            } else {
+            }else if (i > 1 && j > 1 && s1[i - 1] == s2[j - 2] && s1[i - 2] == s2[j - 1]) {
+                int costoTransposicion = prev[j - 2] + costo_trans(s1[i - 1], s2[j - 1]);
+                curr[j] = min(curr[j], costoTransposicion);
+            }
+            else {
                 // Calcular costos específicos para cada operación
                 int costoInsercion = curr[j - 1] + costo_ins(s2[j - 1]);
                 int costoEliminacion = prev[j] + costo_del(s1[i - 1]);
@@ -49,23 +56,18 @@ int editDist(string& s1, string& s2) {
 
                 // Encontrar el mínimo costo de inserción, eliminación o sustitución
                 curr[j] = min({costoInsercion, costoEliminacion, costoSustitucion});
-
-                // Verificar transposición
-                if (i > 1 && j > 1 && s1[i - 1] == s2[j - 2] && s1[i - 2] == s2[j - 1]) {
-                    int costoTransposicion = prev[j - 2] + costo_trans(s1[i - 1], s2[j - 1]);
-                    curr[j] = min(curr[j], costoTransposicion);
-                }
             }
         }
         prev = curr; // Actualizar la fila anterior
     }
 
-    cout<< endl;
     return prev[n];
 }
 
 int main() {
-    string s2 ="execution" , s1 = "intention";
+    string s1 = "balcon";
+    string s2 = "blanco";
+
     cout << "La distancia de edición con costos específicos es: " << editDist(s1, s2) << "\n";
     return 0;
 }

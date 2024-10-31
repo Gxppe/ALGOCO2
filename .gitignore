@@ -1,0 +1,17 @@
+# Ignorar archivos de compilación
+Compilados/
+*.o
+*.out
+*.exe
+*.obj
+*.a
+*.so
+*.dll
+
+# Archivos de configuración específicos de VS Code
+.vscode/
+
+# Otros archivos innecesarios
+*.log
+*.tmp
+*.swp

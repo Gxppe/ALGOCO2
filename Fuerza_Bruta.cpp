@@ -57,8 +57,8 @@ int editDist(string& s1, string& s2) {
 
 // Código principal
 int main() {
-    string s1 = "intention";
-    string s2 = "execution";
+    string s1 = "balcon";
+    string s2 = "blanco";
 
     // Resultado de la distancia de edición
     cout << "Distancia de edición: " << editDist(s1, s2) << endl;
