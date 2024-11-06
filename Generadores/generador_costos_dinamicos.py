@@ -28,8 +28,9 @@ def generar_matriz_simetrica(n, min_val=0, max_val=10):
     np.fill_diagonal(matriz_simetrica, 0)
     return matriz_simetrica
 
-matriz_costos= generar_matriz_simetrica(26,1,30)
+
 for k in costos2d:
+    matriz_costos= generar_matriz_simetrica(26,1,30)
     with open('Costos/Dinamicos/{}.txt'.format(k),'w') as file:
         for i in range(97,123):
             for j in range(97,123):
