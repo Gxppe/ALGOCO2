@@ -12,7 +12,7 @@ costos2d=[
 
 #para generar los costos en 1 dimensión
 for i in costos1d:
-    with open('Costos/{}.txt'.format(i),'w') as file:
+    with open('Costos/Dinamicos/{}.txt'.format(i),'w') as file:
         for j in range(97,123):
             letra= chr(j)
             costo_letra=np.random.randint(1, 20)
@@ -30,7 +30,7 @@ def generar_matriz_simetrica(n, min_val=0, max_val=10):
 
 matriz_costos= generar_matriz_simetrica(26,1,30)
 for k in costos2d:
-    with open('Costos/{}.txt'.format(k),'w') as file:
+    with open('Costos/Dinamicos/{}.txt'.format(k),'w') as file:
         for i in range(97,123):
             for j in range(97,123):
                 file.write("{} ".format(matriz_costos[i-97][j-97])) 
