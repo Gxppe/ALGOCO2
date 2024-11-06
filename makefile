@@ -3,8 +3,8 @@ EXEC1 = Compilados/Fuerza_Bruta
 EXEC2 = Compilados/Programacion_Dinamica
 
 # Archivos fuente
-SRC1 = Fuerza_Bruta.cpp
-SRC2 = Programacion_Dinamica.cpp
+SRC1 = Codigos/Fuerza_Bruta.cpp
+SRC2 = Codigos/Programacion_Dinamica.cpp
 
 # Compilador y opciones
 CXX = g++
