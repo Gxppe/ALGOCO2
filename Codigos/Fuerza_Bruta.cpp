@@ -114,6 +114,8 @@ int costo_trans(char a, char b, const vector<vector<int>>& costos) {
 
 
 
+//PA QUE EL EMILIO CACHE XD
+
 
 // Función recursiva para calcular la distancia de edición con costos personalizados
 int editDistRec(string& s1, string& s2, int m, int n, unordered_map<char, int> &costos_del,unordered_map<char, int> &costos_ins, vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
