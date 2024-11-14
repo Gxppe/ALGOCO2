@@ -65,9 +65,16 @@ int costo_sub(char a, char b, const vector<vector<int>>& costos) {
     int indexA = charToIndex(a);
     int indexB = charToIndex(b);
 
+    if (a =='*'){
+        cout << "entre a "<< endl;
+        return costos[costos.size()-1][charToIndex(b)];
+    }else if (b =='*'){
+        cout << "entre b "<< endl;
+        return costos[charToIndex(a)][costos.size()-1];
+    }
     // Validar índices para evitar acceso fuera de rango
     if (indexA < 0 || indexA >= 27 || indexB < 0 || indexB >= 27) {
-        cout << "Caracteres no válidos: " << a << ", " << b << endl;
+        cout << "Caracteres no válidos(sub): " << a << ", " << b << endl;
         return -1;
     }
 
@@ -81,7 +88,7 @@ int costo_trans(char a, char b, const vector<vector<int>>& costos) {
 
     // Validar índices para evitar acceso fuera de rango
     if (indexA < 0 || indexA >= 27 || indexB < 0 || indexB >= 27) {
-        cout << "Caracteres no válidos: " << a << ", " << b << endl;
+        cout << "Caracteres no válidos(trans): " << a << ", " << b << endl;
         return -1;
     }
 

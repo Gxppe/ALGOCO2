@@ -26,7 +26,7 @@ def CadenasRepetidas(cantidad):
 def CadenasVacias(cantidad):
     datasets=[]
     for _ in range(cantidad):
-        datasets.append([" ", generar_cadena_aleatoria(random.randint(1, 10))])
+        datasets.append(["*", generar_cadena_aleatoria(random.randint(1, 10))])
         datasets.append([generar_cadena_aleatoria(random.randint(1, 10)), " "])
     return datasets
 
