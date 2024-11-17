@@ -48,6 +48,6 @@ def guardarCadenas(filename, lista):
 
 
 
-guardarCadenas("Datasets/Repetidos.txt",CadenasRepetidas(20))
-guardarCadenas("Datasets/Traspuestos.txt",CadenasTranspuestas(20))
-guardarCadenas("Datasets/Vacias.txt",CadenasVacias(10))
+guardarCadenas("Datasets/Repetidos.txt",CadenasRepetidas(40))
+guardarCadenas("Datasets/Traspuestos.txt",CadenasTranspuestas(40))
+guardarCadenas("Datasets/Vacias.txt",CadenasVacias(20))

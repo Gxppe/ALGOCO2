@@ -7,10 +7,6 @@ int charToIndex(char c) {
     return c - 'a';                 // Convertir de 'a' a 'z' a índices 0-25
 }
 
-
-
-
-
 // Función para leer una matriz desde un archivo de texto
 vector<vector<int>> cargarCostosMatriz(const string &nombreArchivo) {
     ifstream file(nombreArchivo);
@@ -66,10 +62,8 @@ int costo_sub(char a, char b, const vector<vector<int>>& costos) {
     int indexB = charToIndex(b);
 
     if (a =='*'){
-        cout << "entre a "<< endl;
         return costos[costos.size()-1][charToIndex(b)];
     }else if (b =='*'){
-        cout << "entre b "<< endl;
         return costos[charToIndex(a)][costos.size()-1];
     }
     // Validar índices para evitar acceso fuera de rango
@@ -91,49 +85,43 @@ int costo_trans(char a, char b, const vector<vector<int>>& costos) {
         cout << "Caracteres no válidos(trans): " << a << ", " << b << endl;
         return -1;
     }
-
     // Retornar el costo de sustitución desde la matriz
     return costos[indexA][indexB];
 }
 
 // Función de distancia de edición con costos específicos y optimización de espacio
-int editDist(string& s1, string& s2,unordered_map<char, int> &costos_delete,unordered_map<char, int> &costos_insert, vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
-    int m = s1.size();
-    int n = s2.size();
+// Función para calcular la distancia mínima de edición
+int editDist_dp(const string &str1, const string &str2, unordered_map<char, int> &costos_del,unordered_map<char, int> &costos_ins, vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
+    int n = str1.length();
+    int m = str2.length();
+    vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
 
-    // prev almacena resultados para la fila (i-1)
-    // y curr para la fila i
-    vector<int> prev(n + 1, 0), curr(n + 1, 0);
-    
-    // Inicializar la fila 0 (costos de inserción)
-    for (int j = 0; j <= n; j++)
-        prev[j] = j * costo_ins(s2[j - 1],costos_insert);
-
-    // Resto de las filas
-    for (int i = 1; i <= m; i++) {
-        curr[0] = i * costo_del(s1[i - 1],costos_delete);  // Costo de eliminación para j = 0
-
-        for (int j = 1; j <= n; j++) {
-            if (s1[i - 1] == s2[j - 1]) {
-                curr[j] = prev[j - 1]; // Sin costo si los caracteres coinciden
-            }else if (i > 1 && j > 1 && s1[i - 1] == s2[j - 2] && s1[i - 2] == s2[j - 1]) {
-                int costoTransposicion = prev[j - 2] + costo_trans(s1[i - 1], s2[j - 1],costos_transponer);
-                curr[j] = min(curr[j], costoTransposicion);
-            }
-            else {
-                // Calcular costos específicos para cada operación
-                int costoInsercion = curr[j - 1] + costo_ins(s2[j - 1],costos_insert);
-                int costoEliminacion = prev[j] + costo_del(s1[i - 1],costos_delete);
-                int costoSustitucion = prev[j - 1] + costo_sub(s1[i - 1], s2[j - 1],costos_sustituir);
-
-                // Encontrar el mínimo costo de inserción, eliminación o sustitución
-                curr[j] = min({costoInsercion, costoEliminacion, costoSustitucion});
-            }
-        }
-        prev = curr; // Actualizar la fila anterior
+    // Inicialización
+    for (int i = 1; i <= n; i++) {
+        dp[i][0] = dp[i - 1][0] + costo_del(str1[i - 1],costos_del);
+    }
+    for (int j = 1; j <= m; j++) {
+        dp[0][j] = dp[0][j - 1] + costo_ins(str2[j - 1],costos_ins);
     }
 
-    return prev[n];
+    // Llenar la matriz DP
+    for (int i = 1; i <= n; i++) {
+        for (int j = 1; j <= m; j++) {
+            int costo_delete = dp[i - 1][j] + costo_del(str1[i - 1],costos_del);
+            int costo_insert = dp[i][j - 1] + costo_ins(str2[j - 1],costos_ins);
+            int costo_substitute = dp[i - 1][j - 1] + costo_sub(str1[i - 1], str2[j - 1],costos_sustituir);
+
+            dp[i][j] = min(costo_delete, min(costo_insert, costo_substitute));
+
+            // Verificar transposición
+            if (i > 1 && j > 1 && str1[i - 1] == str2[j - 2] && str1[i - 2] == str2[j - 1]) {
+                int costo_transpose = dp[i - 2][j - 2] + costo_trans(str1[i - 1], str1[i - 2],costos_transponer);
+                dp[i][j] = min(dp[i][j], costo_transpose);
+            }
+        }
+    }
+
+    return dp[n][m];
 }
 
 void procesarDataset(const string& inputFilename, const string& outputFilename,
@@ -163,7 +151,7 @@ void procesarDataset(const string& inputFilename, const string& outputFilename,
         if (str2.empty()) str2 = "\"\"";
 
         auto start = high_resolution_clock::now();
-        int resultado = editDist(str1, str2, costos_del, costos_ins, costos_transponer, costos_sustituir);
+        int resultado = editDist_dp(str1, str2, costos_del, costos_ins, costos_transponer, costos_sustituir);
         auto end = high_resolution_clock::now();
 
         auto duration = duration_cast<microseconds>(end - start).count();
@@ -209,15 +197,16 @@ unordered_map<char, int> cargarCostosVector(const string& filename) {
 int main() {
     unordered_map<char,int> costo_del=cargarCostosVector("Costos/Dinamicos/delete.txt");
     unordered_map<char,int> costo_ins=cargarCostosVector("Costos/Dinamicos/insert.txt");
-    vector<vector<int>> costo_trans=cargarCostosMatriz("Costos/Dinamicos/substitution.txt");
-    vector<vector<int>> costo_sub=cargarCostosMatriz("Costos/Dinamicos/transpose.txt");
-
+    vector<vector<int>> costo_tran=cargarCostosMatriz("Costos/Dinamicos/transpose.txt");
+    vector<vector<int>> costo_sub=cargarCostosMatriz("Costos/Dinamicos/substitution.txt");
+    
     cout << "Repetidos" << endl;
-    procesarDataset("Datasets/Repetidos.txt", "Resultados/Dinamicos/Repetidos.csv", costo_del, costo_ins, costo_trans, costo_sub);
+    procesarDataset("Datasets/Repetidos.txt", "Resultados/Dinamicos/Repetidos.csv", costo_del, costo_ins, costo_tran, costo_sub);
     cout << "Traspuestos" << endl;
-    procesarDataset("Datasets/Traspuestos.txt", "Resultados/Dinamicos/Traspuestos.csv", costo_del, costo_ins, costo_trans, costo_sub);
+    procesarDataset("Datasets/Traspuestos.txt", "Resultados/Dinamicos/Traspuestos.csv", costo_del, costo_ins, costo_tran, costo_sub);
     cout << "Vacios" << endl;
-    procesarDataset("Datasets/Vacias.txt", "Resultados/Dinamicos/Vacios.csv", costo_del, costo_ins, costo_trans, costo_sub);
-
-
+    procesarDataset("Datasets/Vacias.txt", "Resultados/Dinamicos/Vacios.csv", costo_del, costo_ins, costo_tran, costo_sub);
+    return 0;
 }
+
+

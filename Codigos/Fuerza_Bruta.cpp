@@ -7,67 +7,6 @@ int charToIndex(char c) {
     return c - 'a';                 // Convertir de 'a' a 'z' a índices 0-25
 }
 
-// Función para procesar el dataset
-void procesarDataset(const string& inputFilename, const string& outputFilename,
-                     unordered_map<char, int>& costos_del, unordered_map<char, int>& costos_ins,
-                     vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
-    ifstream inputFile(inputFilename);
-    ofstream outputFile(outputFilename);
-
-    if (!inputFile || !outputFile) {
-        cerr << "Error al abrir los archivos." << endl;
-        return;
-    }
-
-    int N;
-    inputFile >> N;
-    inputFile.ignore();
-
-    for (int i = 0; i < N; ++i) {
-        string str1, str2;
-        getline(inputFile, str1, ' ');
-        getline(inputFile, str2);
-
-        if (str1.empty()) str1 = "\"\"";
-        if (str2.empty()) str2 = "\"\"";
-
-        auto start = high_resolution_clock::now();
-        int resultado = editDist(str1, str2, costos_del, costos_ins, costos_transponer, costos_sustituir);
-        auto end = high_resolution_clock::now();
-
-        auto duration = duration_cast<microseconds>(end - start).count();
-
-        outputFile << "[" << str1 << ", " << str2 << "], "
-                   << "Tiempo de ejecución: " << duration << " microsegundos, "
-                   << "Longitud del string: " << resultado << endl;
-    }
-
-    inputFile.close();
-    outputFile.close();
-}
-
-// Función para cargar los costos de eliminación desde el archivo "delete.txt"
-unordered_map<char, int> cargarCostosVector(const string& filename) {
-    unordered_map<char, int> costos;
-    ifstream file(filename);
-
-    if (!file.is_open()) {
-        cout << "No se pudo abrir el archivo " << filename << endl;
-        return costos;
-    }
-
-    char letra;
-    int costo;
-
-    // Leer cada línea y llenar el mapa con los costos
-    while (file >> letra >> costo) {
-        costos[letra] = costo;
-    }
-
-    file.close();
-    return costos;
-}
-
 // Función para leer una matriz desde un archivo de texto
 vector<vector<int>> cargarCostosMatriz(const string &nombreArchivo) {
     ifstream file(nombreArchivo);
@@ -122,9 +61,14 @@ int costo_sub(char a, char b, const vector<vector<int>>& costos) {
     int indexA = charToIndex(a);
     int indexB = charToIndex(b);
 
+    if (a =='*'){
+        return costos[costos.size()-1][charToIndex(b)];
+    }else if (b =='*'){
+        return costos[charToIndex(a)][costos.size()-1];
+    }
     // Validar índices para evitar acceso fuera de rango
     if (indexA < 0 || indexA >= 27 || indexB < 0 || indexB >= 27) {
-        cout << "Caracteres no válidos: " << a << ", " << b << endl;
+        cout << "Caracteres no válidos(sub): " << a << ", " << b << endl;
         return -1;
     }
 
@@ -138,18 +82,12 @@ int costo_trans(char a, char b, const vector<vector<int>>& costos) {
 
     // Validar índices para evitar acceso fuera de rango
     if (indexA < 0 || indexA >= 27 || indexB < 0 || indexB >= 27) {
-        cout << "Caracteres no válidos: " << a << ", " << b << endl;
+        cout << "Caracteres no válidos(trans): " << a << ", " << b << endl;
         return -1;
     }
-
     // Retornar el costo de sustitución desde la matriz
     return costos[indexA][indexB];
 }
-
-
-
-//PA QUE EL EMILIO CACHE XD
-
 
 // Función recursiva para calcular la distancia de edición con costos personalizados
 int editDist(string& s1, string& s2, int m, int n, unordered_map<char, int> &costos_del,unordered_map<char, int> &costos_ins, vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
@@ -183,15 +121,86 @@ int editDist(string& s1, string& s2,unordered_map<char, int> &costos_del,unorder
     return editDist(s1, s2, s1.length(), s2.length(),costos_del,costos_ins,costos_transponer,costos_sustituir);
 }
 
+void procesarDataset(const string& inputFilename, const string& outputFilename,
+                     unordered_map<char, int>& costos_del, unordered_map<char, int>& costos_ins,
+                     vector<vector<int>>& costos_transponer, vector<vector<int>>& costos_sustituir) {
+    ifstream inputFile(inputFilename);
+    ofstream outputFile(outputFilename);
+
+    if (!inputFile || !outputFile) {
+        cerr << "Error al abrir los archivos." << endl;
+        return;
+    }
+
+    int N;
+    inputFile >> N;
+    inputFile.ignore();
+
+    // Escribir encabezado del archivo CSV
+    outputFile << "largo_str1,largo_str2,tiempo_microsegundos,distancia_edicion\n";
+
+    for (int i = 0; i < N; ++i) {
+        string str1, str2;
+        getline(inputFile, str1, ' ');
+        getline(inputFile, str2);
+
+        if (str1.empty()) str1 = "\"\"";
+        if (str2.empty()) str2 = "\"\"";
+
+        auto start = high_resolution_clock::now();
+        int resultado = editDist(str1, str2, costos_del, costos_ins, costos_transponer, costos_sustituir);
+        auto end = high_resolution_clock::now();
+
+        auto duration = duration_cast<microseconds>(end - start).count();
+
+        // Nombre de la instancia basado en el índice
+
+
+        // Escribir la línea en formato CSV
+        outputFile << str1.length() << ","
+                   << str2.length() << ","
+                   << duration << ","
+                   << resultado << "\n";
+    }
+
+    inputFile.close();
+    outputFile.close();
+}
+
+unordered_map<char, int> cargarCostosVector(const string& filename) {
+    unordered_map<char, int> costos;
+    ifstream file(filename);
+
+    if (!file.is_open()) {
+        cout << "No se pudo abrir el archivo " << filename << endl;
+        return costos;
+    }
+
+    char letra;
+    int costo;
+
+    // Leer cada línea y llenar el mapa con los costos
+    while (file >> letra >> costo) {
+        costos[letra] = costo;
+    }
+
+    file.close();
+    return costos;
+}
+
 // Código principal
 int main() {
     unordered_map<char, int> costo_del = cargarCostosVector("Costos/Dinamicos/delete.txt");
     unordered_map<char, int> costo_ins = cargarCostosVector("Costos/Dinamicos/insert.txt");
-    vector<vector<int>> costo_trans = cargarCostosMatriz("Costos/Dinamicos/transpose.txt");
+    vector<vector<int>> costo_tran = cargarCostosMatriz("Costos/Dinamicos/transpose.txt");
     vector<vector<int>> costo_sub = cargarCostosMatriz("Costos/Dinamicos/substitution.txt");
 
-    procesarDataset("Datasets/Repetidos.txt", "output.txt", costo_del, costo_ins, costo_trans, costo_sub);
-    procesarDataset("Datasets/Traspuestos.txt", "output.txt", costo_del, costo_ins, costo_trans, costo_sub);
-    procesarDataset("Datasets/Vacias.txt", "output.txt", costo_del, costo_ins, costo_trans, costo_sub);
+    cout << "Repetidos" << endl;
+    procesarDataset("Datasets/Repetidos.txt", "Resultados/Dinamicos/Repetidos.csv", costo_del, costo_ins, costo_tran, costo_sub);
+    cout << "Traspuestos" << endl;
+    procesarDataset("Datasets/Traspuestos.txt", "Resultados/Dinamicos/Traspuestos.csv", costo_del, costo_ins, costo_tran, costo_sub);
+    cout << "Vacios" << endl;
+    procesarDataset("Datasets/Vacias.txt", "Resultados/Dinamicos/Vacios.csv", costo_del, costo_ins, costo_tran, costo_sub);
+
     return 0;
 }
